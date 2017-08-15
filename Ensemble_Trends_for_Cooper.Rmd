@@ -1,0 +1,84 @@
+---
+title: "R Notebook for Regression for Kevin"
+output:
+  html_document: default
+  html_notebook: default
+  pdf_document: default
+---
+
+Loading Data
+
+```{r}
+
+
+library(XLConnect) # Load the "Excel Connector for R" Library. 
+                   #     (to load the spreadsheet data)
+library(MASS)      # Load the "Modern Applied Statistics with S Library" 
+                   #    (for regressions)
+library(plyr)      # Load the "Tools for Splitting, Applying and 
+                   #     Combining Data" Library
+
+# You will need to change the path to your file location.
+excel_file_name <- "/Users/wjc/GitHub/kc_steamboat_clim/500mb_patterns_1986-2050ensembles.xlsx"
+# Import the data from the spreadsheet into a single data "frame"
+gcm_ens_1 <- readWorksheetFromFile(file   = excel_file_name, # file name here
+                                   sheet  = "Ensemble 1",    # select the page Sheet
+                                   region = "A40:H90",       # chose the cells you need to import
+                                   header = TRUE             # TRUE if the first imported row is the Header
+                                   )
+
+gcm_ens_1 <- rename(x       = gcm_ens_1,             # data frame you want to patch
+                    replace = c("Snowfall.Year..Oct..Mar.." =               # the name you want to change
+                                "Year")  # the replacement name
+                    )
+
+```
+
+
+
+Now to the regression model
+
+```{r}
+
+# We want to create a regression model.
+# The syntax for R (you can also see it in MATLAB) is
+#  dependant_variable ~ your independant_variables in equation form
+# Now we create a traditional linear model.  
+#   The form is y ~ x  [ the y-intercept is implied to be there]
+linear_model.Ridge <- lm(formula = Ridge ~ Year, # your formula y ~ x
+                         data    = gcm_ens_1)                     # the data frame
+
+# Print results of the linear regression
+summary(object = linear_model.Ridge)
+
+# Kendal Tau
+
+cor.test(y=gcm_ens_1$Ridge, x=gcm_ens_1$Year, 
+         method="kendall")       
+
+```
+
+
+Plotting Data
+
+
+```{r}
+
+
+
+plot(x    = gcm_ens_1$Year,                          # x-values (the $ lets us reach into
+     y    = gcm_ens_1$Ridge,                        # y-values     the data frame) 
+     main = "gcm_ens_1",                           # main title string
+     xlab = "Year",                # x-labels
+     ylab = "Ridge Frequency (percent)"           # y-labels
+     )
+
+
+
+# add lines to graph
+
+abline(reg = linear_model.Ridge,  # put the regression output here
+       col = "red"                # color it red
+       )
+```
+
